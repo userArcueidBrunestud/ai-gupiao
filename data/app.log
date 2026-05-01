@@ -212,3 +212,16 @@
 2026-05-01 09:58:05 | INFO     | src.ai.features:build_features:46 — Built features: 1527 samples, 54 features
 2026-05-01 20:15:25 | INFO     | web:_load_stock_list:167 — Loaded 5201 stocks for search cache
 2026-05-01 20:15:29 | INFO     | web:_load_stock_list:167 — Loaded 5201 stocks for search cache
+2026-05-01 20:22:27 | INFO     | web:_load_stock_list:167 — Loaded 5201 stocks for search cache
+2026-05-01 20:22:28 | INFO     | web:_load_stock_list:167 — Loaded 5201 stocks for search cache
+2026-05-01 20:22:30 | INFO     | src.analysis.analyzer:_build_registry:41 — TechnicalAnalyzer initialized with: ['ma', 'rsi', 'macd', 'bollinger']
+2026-05-01 20:22:30 | INFO     | src.pipeline.orchestrator:collect_data:46 — Collecting data for 000001
+2026-05-01 20:22:34 | INFO     | src.data.akshare_fetcher:fetch_daily_data:94 — Fetched 1 daily bars for 000001
+2026-05-01 20:22:35 | INFO     | src.pipeline.orchestrator:collect_data:60 — 000001: saved 1 daily bars
+2026-05-01 20:22:35 | INFO     | src.pipeline.orchestrator:compute_indicators:77 — 000001: computed & saved 1532 indicator rows
+2026-05-01 20:22:35 | INFO     | src.ai.features:build_features:46 — Built features: 1527 samples, 54 features
+2026-05-01 20:22:35 | INFO     | src.ai.sklearn_predictor:train:53 — Model trained: 1221 samples, 54 features, classes=[0.0, 1.0, 2.0]
+2026-05-01 20:22:35 | INFO     | src.ai.evaluation:evaluate_model:42 — Model accuracy: 0.3725
+2026-05-01 20:22:35 | INFO     | src.ai.sklearn_predictor:save:100 — Model saved to data\models\000001_2026-05-01.joblib
+2026-05-01 20:22:35 | INFO     | src.pipeline.orchestrator:train_model:100 — Model for 000001 — accuracy=0.3725, saved to data\models\000001_2026-05-01.joblib
+2026-05-01 20:22:35 | INFO     | src.ai.features:build_features:46 — Built features: 1527 samples, 54 features
