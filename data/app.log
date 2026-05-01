@@ -1,0 +1,214 @@
+2026-04-29 20:55:53 | INFO     | src.analysis.analyzer:_build_registry:41 — TechnicalAnalyzer initialized with: ['ma', 'rsi', 'macd', 'bollinger']
+2026-04-29 20:55:53 | INFO     | src.pipeline.orchestrator:collect_data:46 — Collecting data for 000001
+2026-04-29 20:55:53 | WARNING  | src.data.akshare_fetcher:fetch_daily_data:66 — No data returned for 000001 [2020-01-01..2026-04-29]
+2026-04-29 20:55:53 | INFO     | src.pipeline.orchestrator:collect_data:60 — 000001: saved 0 daily bars
+2026-04-29 21:01:31 | INFO     | src.analysis.analyzer:_build_registry:41 — TechnicalAnalyzer initialized with: ['ma', 'rsi', 'macd', 'bollinger']
+2026-04-29 21:01:31 | INFO     | src.pipeline.orchestrator:collect_data:46 — Collecting data for 000001
+2026-04-29 21:15:10 | INFO     | src.analysis.analyzer:_build_registry:41 — TechnicalAnalyzer initialized with: ['ma', 'rsi', 'macd', 'bollinger']
+2026-04-29 21:15:10 | INFO     | src.pipeline.orchestrator:collect_data:46 — Collecting data for 000001
+2026-04-29 21:15:14 | WARNING  | src.data.akshare_fetcher:fetch_daily_data:84 — No data returned for 000001 [2020-01-01..2026-04-29]
+2026-04-29 21:15:14 | INFO     | src.pipeline.orchestrator:collect_data:60 — 000001: saved 0 daily bars
+2026-04-29 21:17:15 | INFO     | src.analysis.analyzer:_build_registry:41 — TechnicalAnalyzer initialized with: ['ma', 'rsi', 'macd', 'bollinger']
+2026-04-29 21:17:15 | INFO     | src.pipeline.orchestrator:collect_data:46 — Collecting data for 000001
+2026-04-29 21:17:18 | WARNING  | src.data.akshare_fetcher:fetch_daily_data:83 — No data returned for 000001 [2020-01-01..2026-04-29]
+2026-04-29 21:17:18 | INFO     | src.pipeline.orchestrator:collect_data:60 — 000001: saved 0 daily bars
+2026-04-29 21:18:58 | INFO     | src.analysis.analyzer:_build_registry:41 — TechnicalAnalyzer initialized with: ['ma', 'rsi', 'macd', 'bollinger']
+2026-04-29 21:18:58 | INFO     | src.pipeline.orchestrator:collect_data:46 — Collecting data for 000001
+2026-04-29 21:19:01 | INFO     | src.data.akshare_fetcher:fetch_daily_data:94 — Fetched 1531 daily bars for 000001
+2026-04-29 21:19:01 | INFO     | src.pipeline.orchestrator:collect_data:60 — 000001: saved 1531 daily bars
+2026-04-29 21:21:06 | INFO     | src.analysis.analyzer:_build_registry:41 — TechnicalAnalyzer initialized with: ['ma', 'rsi', 'macd', 'bollinger']
+2026-04-29 21:21:06 | INFO     | src.pipeline.orchestrator:run_full_pipeline:129 — Starting full pipeline for 000001
+2026-04-29 21:21:06 | INFO     | src.pipeline.orchestrator:collect_data:46 — Collecting data for 000001
+2026-04-29 21:21:10 | INFO     | src.data.akshare_fetcher:fetch_daily_data:94 — Fetched 1531 daily bars for 000001
+2026-04-29 21:21:10 | INFO     | src.pipeline.orchestrator:collect_data:60 — 000001: saved 1531 daily bars
+2026-04-29 21:21:10 | INFO     | src.pipeline.orchestrator:compute_indicators:77 — 000001: computed & saved 1531 indicator rows
+2026-04-29 21:21:10 | INFO     | src.ai.features:build_features:46 — Built features: 1526 samples, 54 features
+2026-04-29 21:21:10 | INFO     | src.ai.sklearn_predictor:train:53 — Model trained: 1220 samples, 54 features, classes=[0.0, 1.0, 2.0]
+2026-04-29 21:21:10 | INFO     | src.ai.evaluation:evaluate_model:42 — Model accuracy: 0.3464
+2026-04-29 21:21:10 | INFO     | src.ai.sklearn_predictor:save:100 — Model saved to data\models\000001_2026-04-29.joblib
+2026-04-29 21:21:10 | INFO     | src.pipeline.orchestrator:train_model:100 — Model for 000001 — accuracy=0.3464, saved to data\models\000001_2026-04-29.joblib
+2026-04-29 21:21:10 | INFO     | src.ai.features:build_features:46 — Built features: 1526 samples, 54 features
+2026-04-29 21:21:10 | INFO     | src.pipeline.orchestrator:run_full_pipeline:134 — Pipeline complete — 000001: flat (confidence=47.98%)
+2026-04-29 21:55:18 | INFO     | src.analysis.analyzer:_build_registry:41 — TechnicalAnalyzer initialized with: ['ma', 'rsi', 'macd', 'bollinger']
+2026-04-29 21:55:39 | WARNING  | web:stock_search:95 — Stock search failed: [akshare] fetch failed: HTTPSConnectionPool(host='82.push2.eastmoney.com', port=443): Max retries exceeded with url: /api/qt/clist/get?pn=3&pz=100&po=1&np=1&ut=bd1d9ddb04089700cf9c27f6f7426281&fltt=2&invt=2&fid=f12&fs=m%3A0+t%3A6%2Cm%3A0+t%3A80%2Cm%3A1+t%3A2%2Cm%3A1+t%3A23%2Cm%3A0+t%3A81+s%3A2048&fields=f1%2Cf2%2Cf3%2Cf4%2Cf5%2Cf6%2Cf7%2Cf8%2Cf9%2Cf10%2Cf12%2Cf13%2Cf14%2Cf15%2Cf16%2Cf17%2Cf18%2Cf20%2Cf21%2Cf23%2Cf24%2Cf25%2Cf22%2Cf11%2Cf62%2Cf128%2Cf136%2Cf115%2Cf152 (Caused by ProxyError('Unable to connect to proxy', RemoteDisconnected('Remote end closed connection without response')))
+2026-04-29 22:41:42 | WARNING  | web:stock_search:95 — Stock search failed: [akshare] fetch failed: HTTPSConnectionPool(host='82.push2.eastmoney.com', port=443): Max retries exceeded with url: /api/qt/clist/get?pn=1&pz=100&po=1&np=1&ut=bd1d9ddb04089700cf9c27f6f7426281&fltt=2&invt=2&fid=f12&fs=m%3A0+t%3A6%2Cm%3A0+t%3A80%2Cm%3A1+t%3A2%2Cm%3A1+t%3A23%2Cm%3A0+t%3A81+s%3A2048&fields=f1%2Cf2%2Cf3%2Cf4%2Cf5%2Cf6%2Cf7%2Cf8%2Cf9%2Cf10%2Cf12%2Cf13%2Cf14%2Cf15%2Cf16%2Cf17%2Cf18%2Cf20%2Cf21%2Cf23%2Cf24%2Cf25%2Cf22%2Cf11%2Cf62%2Cf128%2Cf136%2Cf115%2Cf152 (Caused by ProxyError('Unable to connect to proxy', RemoteDisconnected('Remote end closed connection without response')))
+2026-04-29 22:41:55 | WARNING  | web:stock_search:95 — Stock search failed: [akshare] fetch failed: HTTPSConnectionPool(host='82.push2.eastmoney.com', port=443): Max retries exceeded with url: /api/qt/clist/get?pn=1&pz=100&po=1&np=1&ut=bd1d9ddb04089700cf9c27f6f7426281&fltt=2&invt=2&fid=f12&fs=m%3A0+t%3A6%2Cm%3A0+t%3A80%2Cm%3A1+t%3A2%2Cm%3A1+t%3A23%2Cm%3A0+t%3A81+s%3A2048&fields=f1%2Cf2%2Cf3%2Cf4%2Cf5%2Cf6%2Cf7%2Cf8%2Cf9%2Cf10%2Cf12%2Cf13%2Cf14%2Cf15%2Cf16%2Cf17%2Cf18%2Cf20%2Cf21%2Cf23%2Cf24%2Cf25%2Cf22%2Cf11%2Cf62%2Cf128%2Cf136%2Cf115%2Cf152 (Caused by ProxyError('Unable to connect to proxy', RemoteDisconnected('Remote end closed connection without response')))
+2026-04-29 23:03:33 | WARNING  | web:stock_search:95 — Stock search failed: [akshare] fetch failed: HTTPSConnectionPool(host='82.push2.eastmoney.com', port=443): Max retries exceeded with url: /api/qt/clist/get?pn=1&pz=100&po=1&np=1&ut=bd1d9ddb04089700cf9c27f6f7426281&fltt=2&invt=2&fid=f12&fs=m%3A0+t%3A6%2Cm%3A0+t%3A80%2Cm%3A1+t%3A2%2Cm%3A1+t%3A23%2Cm%3A0+t%3A81+s%3A2048&fields=f1%2Cf2%2Cf3%2Cf4%2Cf5%2Cf6%2Cf7%2Cf8%2Cf9%2Cf10%2Cf12%2Cf13%2Cf14%2Cf15%2Cf16%2Cf17%2Cf18%2Cf20%2Cf21%2Cf23%2Cf24%2Cf25%2Cf22%2Cf11%2Cf62%2Cf128%2Cf136%2Cf115%2Cf152 (Caused by ProxyError('Unable to connect to proxy', RemoteDisconnected('Remote end closed connection without response')))
+2026-04-29 23:03:49 | WARNING  | web:stock_search:95 — Stock search failed: [akshare] fetch failed: HTTPSConnectionPool(host='82.push2.eastmoney.com', port=443): Max retries exceeded with url: /api/qt/clist/get?pn=1&pz=100&po=1&np=1&ut=bd1d9ddb04089700cf9c27f6f7426281&fltt=2&invt=2&fid=f12&fs=m%3A0+t%3A6%2Cm%3A0+t%3A80%2Cm%3A1+t%3A2%2Cm%3A1+t%3A23%2Cm%3A0+t%3A81+s%3A2048&fields=f1%2Cf2%2Cf3%2Cf4%2Cf5%2Cf6%2Cf7%2Cf8%2Cf9%2Cf10%2Cf12%2Cf13%2Cf14%2Cf15%2Cf16%2Cf17%2Cf18%2Cf20%2Cf21%2Cf23%2Cf24%2Cf25%2Cf22%2Cf11%2Cf62%2Cf128%2Cf136%2Cf115%2Cf152 (Caused by ProxyError('Unable to connect to proxy', RemoteDisconnected('Remote end closed connection without response')))
+2026-04-29 23:03:49 | INFO     | src.pipeline.orchestrator:collect_data:46 — Collecting data for 000001
+2026-04-29 23:03:55 | INFO     | src.data.akshare_fetcher:fetch_daily_data:94 — Fetched 1531 daily bars for 000001
+2026-04-29 23:03:56 | INFO     | src.pipeline.orchestrator:collect_data:60 — 000001: saved 1531 daily bars
+2026-04-29 23:03:56 | INFO     | src.pipeline.orchestrator:compute_indicators:77 — 000001: computed & saved 1531 indicator rows
+2026-04-29 23:03:56 | INFO     | src.ai.features:build_features:46 — Built features: 1526 samples, 54 features
+2026-04-29 23:03:56 | INFO     | src.ai.sklearn_predictor:train:53 — Model trained: 1220 samples, 54 features, classes=[0.0, 1.0, 2.0]
+2026-04-29 23:03:56 | INFO     | src.ai.evaluation:evaluate_model:42 — Model accuracy: 0.3464
+2026-04-29 23:03:56 | INFO     | src.ai.sklearn_predictor:save:100 — Model saved to data\models\000001_2026-04-29.joblib
+2026-04-29 23:03:56 | INFO     | src.pipeline.orchestrator:train_model:100 — Model for 000001 — accuracy=0.3464, saved to data\models\000001_2026-04-29.joblib
+2026-04-29 23:03:56 | INFO     | src.ai.features:build_features:46 — Built features: 1526 samples, 54 features
+2026-04-29 23:19:03 | INFO     | web:_load_stock_list:148 — Loaded 5200 stocks for search cache
+2026-04-29 23:20:41 | INFO     | src.analysis.analyzer:_build_registry:41 — TechnicalAnalyzer initialized with: ['ma', 'rsi', 'macd', 'bollinger']
+2026-04-29 23:21:27 | INFO     | web:_load_stock_list:148 — Loaded 5200 stocks for search cache
+2026-04-29 23:21:50 | INFO     | web:_load_stock_list:156 — Loaded 5200 stocks for search cache
+2026-04-29 23:22:22 | INFO     | src.analysis.analyzer:_build_registry:41 — TechnicalAnalyzer initialized with: ['ma', 'rsi', 'macd', 'bollinger']
+2026-04-30 07:59:05 | INFO     | src.pipeline.orchestrator:collect_data:46 — Collecting data for 000001
+2026-04-30 07:59:07 | INFO     | src.data.akshare_fetcher:fetch_daily_data:94 — Fetched 1531 daily bars for 000001
+2026-04-30 07:59:08 | INFO     | src.pipeline.orchestrator:collect_data:60 — 000001: saved 1531 daily bars
+2026-04-30 07:59:08 | INFO     | src.pipeline.orchestrator:compute_indicators:77 — 000001: computed & saved 1531 indicator rows
+2026-04-30 07:59:08 | INFO     | src.ai.features:build_features:46 — Built features: 1526 samples, 54 features
+2026-04-30 07:59:08 | INFO     | src.ai.sklearn_predictor:train:53 — Model trained: 1220 samples, 54 features, classes=[0.0, 1.0, 2.0]
+2026-04-30 07:59:08 | INFO     | src.ai.evaluation:evaluate_model:42 — Model accuracy: 0.3464
+2026-04-30 07:59:08 | INFO     | src.ai.sklearn_predictor:save:100 — Model saved to data\models\000001_2026-04-30.joblib
+2026-04-30 07:59:08 | INFO     | src.pipeline.orchestrator:train_model:100 — Model for 000001 — accuracy=0.3464, saved to data\models\000001_2026-04-30.joblib
+2026-04-30 07:59:08 | INFO     | src.ai.features:build_features:46 — Built features: 1526 samples, 54 features
+2026-04-30 08:00:43 | INFO     | src.pipeline.orchestrator:collect_data:46 — Collecting data for 002130
+2026-04-30 08:00:47 | INFO     | src.data.akshare_fetcher:fetch_daily_data:94 — Fetched 1531 daily bars for 002130
+2026-04-30 08:00:48 | INFO     | src.pipeline.orchestrator:collect_data:60 — 002130: saved 1531 daily bars
+2026-04-30 08:00:48 | INFO     | src.pipeline.orchestrator:compute_indicators:77 — 002130: computed & saved 1531 indicator rows
+2026-04-30 08:00:48 | INFO     | src.ai.features:build_features:46 — Built features: 1526 samples, 54 features
+2026-04-30 08:00:48 | INFO     | src.ai.sklearn_predictor:train:53 — Model trained: 1220 samples, 54 features, classes=[0.0, 1.0, 2.0]
+2026-04-30 08:00:48 | INFO     | src.ai.evaluation:evaluate_model:42 — Model accuracy: 0.4771
+2026-04-30 08:00:48 | INFO     | src.ai.sklearn_predictor:save:100 — Model saved to data\models\002130_2026-04-30.joblib
+2026-04-30 08:00:48 | INFO     | src.pipeline.orchestrator:train_model:100 — Model for 002130 — accuracy=0.4771, saved to data\models\002130_2026-04-30.joblib
+2026-04-30 08:00:48 | INFO     | src.ai.features:build_features:46 — Built features: 1526 samples, 54 features
+2026-04-30 08:03:08 | INFO     | src.analysis.analyzer:_build_registry:41 — TechnicalAnalyzer initialized with: ['ma', 'rsi', 'macd', 'bollinger']
+2026-04-30 08:03:08 | INFO     | src.pipeline.orchestrator:collect_data:46 — Collecting data for 002130
+2026-04-30 08:03:11 | INFO     | web:_load_stock_list:156 — Loaded 5201 stocks for search cache
+2026-04-30 08:03:13 | INFO     | src.data.akshare_fetcher:fetch_daily_data:94 — Fetched 1531 daily bars for 002130
+2026-04-30 08:03:13 | INFO     | src.pipeline.orchestrator:collect_data:60 — 002130: saved 1531 daily bars
+2026-04-30 08:03:13 | INFO     | src.pipeline.orchestrator:compute_indicators:77 — 002130: computed & saved 1531 indicator rows
+2026-04-30 08:03:13 | INFO     | src.ai.features:build_features:46 — Built features: 1526 samples, 54 features
+2026-04-30 08:03:13 | INFO     | src.ai.sklearn_predictor:train:53 — Model trained: 1220 samples, 54 features, classes=[0.0, 1.0, 2.0]
+2026-04-30 08:03:14 | INFO     | src.ai.evaluation:evaluate_model:42 — Model accuracy: 0.4771
+2026-04-30 08:03:14 | INFO     | src.ai.sklearn_predictor:save:100 — Model saved to data\models\002130_2026-04-30.joblib
+2026-04-30 08:03:14 | INFO     | src.pipeline.orchestrator:train_model:100 — Model for 002130 — accuracy=0.4771, saved to data\models\002130_2026-04-30.joblib
+2026-04-30 08:03:14 | INFO     | src.ai.features:build_features:46 — Built features: 1526 samples, 54 features
+2026-04-30 08:03:58 | INFO     | src.pipeline.orchestrator:collect_data:46 — Collecting data for 300476
+2026-04-30 08:04:01 | INFO     | src.data.akshare_fetcher:fetch_daily_data:94 — Fetched 1531 daily bars for 300476
+2026-04-30 08:04:02 | INFO     | src.pipeline.orchestrator:collect_data:60 — 300476: saved 1531 daily bars
+2026-04-30 08:04:02 | INFO     | src.pipeline.orchestrator:compute_indicators:77 — 300476: computed & saved 1531 indicator rows
+2026-04-30 08:04:02 | INFO     | src.ai.features:build_features:46 — Built features: 1526 samples, 54 features
+2026-04-30 08:04:02 | INFO     | src.ai.sklearn_predictor:train:53 — Model trained: 1220 samples, 54 features, classes=[0.0, 1.0, 2.0]
+2026-04-30 08:04:02 | INFO     | src.ai.evaluation:evaluate_model:42 — Model accuracy: 0.3922
+2026-04-30 08:04:02 | INFO     | src.ai.sklearn_predictor:save:100 — Model saved to data\models\300476_2026-04-30.joblib
+2026-04-30 08:04:02 | INFO     | src.pipeline.orchestrator:train_model:100 — Model for 300476 — accuracy=0.3922, saved to data\models\300476_2026-04-30.joblib
+2026-04-30 08:04:02 | INFO     | src.ai.features:build_features:46 — Built features: 1526 samples, 54 features
+2026-04-30 08:04:16 | INFO     | src.pipeline.orchestrator:collect_data:46 — Collecting data for 002130
+2026-04-30 08:04:20 | INFO     | src.data.akshare_fetcher:fetch_daily_data:94 — Fetched 1531 daily bars for 002130
+2026-04-30 08:04:20 | INFO     | src.pipeline.orchestrator:collect_data:60 — 002130: saved 1531 daily bars
+2026-04-30 08:04:20 | INFO     | src.pipeline.orchestrator:compute_indicators:77 — 002130: computed & saved 1531 indicator rows
+2026-04-30 08:04:20 | INFO     | src.ai.features:build_features:46 — Built features: 1526 samples, 54 features
+2026-04-30 08:04:20 | INFO     | src.ai.sklearn_predictor:train:53 — Model trained: 1220 samples, 54 features, classes=[0.0, 1.0, 2.0]
+2026-04-30 08:04:21 | INFO     | src.ai.evaluation:evaluate_model:42 — Model accuracy: 0.4771
+2026-04-30 08:04:21 | INFO     | src.ai.sklearn_predictor:save:100 — Model saved to data\models\002130_2026-04-30.joblib
+2026-04-30 08:04:21 | INFO     | src.pipeline.orchestrator:train_model:100 — Model for 002130 — accuracy=0.4771, saved to data\models\002130_2026-04-30.joblib
+2026-04-30 08:04:21 | INFO     | src.ai.features:build_features:46 — Built features: 1526 samples, 54 features
+2026-04-30 08:06:04 | INFO     | web:_load_stock_list:167 — Loaded 5201 stocks for search cache
+2026-04-30 08:06:50 | INFO     | web:_load_stock_list:167 — Loaded 5201 stocks for search cache
+2026-04-30 08:07:02 | INFO     | src.analysis.analyzer:_build_registry:41 — TechnicalAnalyzer initialized with: ['ma', 'rsi', 'macd', 'bollinger']
+2026-04-30 08:07:17 | INFO     | src.pipeline.orchestrator:collect_data:46 — Collecting data for 300476
+2026-04-30 08:07:19 | INFO     | src.data.akshare_fetcher:fetch_daily_data:94 — Fetched 1531 daily bars for 300476
+2026-04-30 08:07:20 | INFO     | src.pipeline.orchestrator:collect_data:60 — 300476: saved 1531 daily bars
+2026-04-30 08:07:20 | INFO     | src.pipeline.orchestrator:compute_indicators:77 — 300476: computed & saved 1531 indicator rows
+2026-04-30 08:07:20 | INFO     | src.ai.features:build_features:46 — Built features: 1526 samples, 54 features
+2026-04-30 08:07:20 | INFO     | src.ai.sklearn_predictor:train:53 — Model trained: 1220 samples, 54 features, classes=[0.0, 1.0, 2.0]
+2026-04-30 08:07:20 | INFO     | src.ai.evaluation:evaluate_model:42 — Model accuracy: 0.3922
+2026-04-30 08:07:20 | INFO     | src.ai.sklearn_predictor:save:100 — Model saved to data\models\300476_2026-04-30.joblib
+2026-04-30 08:07:20 | INFO     | src.pipeline.orchestrator:train_model:100 — Model for 300476 — accuracy=0.3922, saved to data\models\300476_2026-04-30.joblib
+2026-04-30 08:07:20 | INFO     | src.ai.features:build_features:46 — Built features: 1526 samples, 54 features
+2026-04-30 08:07:45 | INFO     | src.pipeline.orchestrator:collect_data:46 — Collecting data for 000001
+2026-04-30 08:07:49 | INFO     | src.data.akshare_fetcher:fetch_daily_data:94 — Fetched 1531 daily bars for 000001
+2026-04-30 08:07:49 | INFO     | src.pipeline.orchestrator:collect_data:60 — 000001: saved 1531 daily bars
+2026-04-30 08:07:49 | INFO     | src.pipeline.orchestrator:compute_indicators:77 — 000001: computed & saved 1531 indicator rows
+2026-04-30 08:07:49 | INFO     | src.ai.features:build_features:46 — Built features: 1526 samples, 54 features
+2026-04-30 08:07:50 | INFO     | src.ai.sklearn_predictor:train:53 — Model trained: 1220 samples, 54 features, classes=[0.0, 1.0, 2.0]
+2026-04-30 08:07:50 | INFO     | src.ai.evaluation:evaluate_model:42 — Model accuracy: 0.3464
+2026-04-30 08:07:50 | INFO     | src.ai.sklearn_predictor:save:100 — Model saved to data\models\000001_2026-04-30.joblib
+2026-04-30 08:07:50 | INFO     | src.pipeline.orchestrator:train_model:100 — Model for 000001 — accuracy=0.3464, saved to data\models\000001_2026-04-30.joblib
+2026-04-30 08:07:50 | INFO     | src.ai.features:build_features:46 — Built features: 1526 samples, 54 features
+2026-04-30 08:08:27 | INFO     | src.pipeline.orchestrator:collect_data:46 — Collecting data for 300476
+2026-04-30 08:08:29 | INFO     | src.data.akshare_fetcher:fetch_daily_data:94 — Fetched 1531 daily bars for 300476
+2026-04-30 08:08:29 | INFO     | src.pipeline.orchestrator:collect_data:60 — 300476: saved 1531 daily bars
+2026-04-30 08:08:29 | INFO     | src.pipeline.orchestrator:compute_indicators:77 — 300476: computed & saved 1531 indicator rows
+2026-04-30 08:08:29 | INFO     | src.ai.features:build_features:46 — Built features: 1526 samples, 54 features
+2026-04-30 08:08:29 | INFO     | src.ai.sklearn_predictor:train:53 — Model trained: 1220 samples, 54 features, classes=[0.0, 1.0, 2.0]
+2026-04-30 08:08:29 | INFO     | src.ai.evaluation:evaluate_model:42 — Model accuracy: 0.3922
+2026-04-30 08:08:29 | INFO     | src.ai.sklearn_predictor:save:100 — Model saved to data\models\300476_2026-04-30.joblib
+2026-04-30 08:08:29 | INFO     | src.pipeline.orchestrator:train_model:100 — Model for 300476 — accuracy=0.3922, saved to data\models\300476_2026-04-30.joblib
+2026-04-30 08:08:30 | INFO     | src.ai.features:build_features:46 — Built features: 1526 samples, 54 features
+2026-04-30 08:08:47 | INFO     | web:_load_stock_list:167 — Loaded 5201 stocks for search cache
+2026-04-30 08:08:54 | INFO     | web:_load_stock_list:167 — Loaded 5201 stocks for search cache
+2026-04-30 08:09:12 | INFO     | web:_load_stock_list:167 — Loaded 5201 stocks for search cache
+2026-04-30 08:10:07 | INFO     | web:_load_stock_list:167 — Loaded 5201 stocks for search cache
+2026-04-30 08:12:21 | INFO     | src.analysis.analyzer:_build_registry:41 — TechnicalAnalyzer initialized with: ['ma', 'rsi', 'macd', 'bollinger']
+2026-04-30 08:13:46 | INFO     | web:_load_stock_list:167 — Loaded 5201 stocks for search cache
+2026-04-30 08:14:39 | INFO     | web:_load_stock_list:167 — Loaded 5201 stocks for search cache
+2026-04-30 08:15:04 | INFO     | src.analysis.analyzer:_build_registry:41 — TechnicalAnalyzer initialized with: ['ma', 'rsi', 'macd', 'bollinger']
+2026-04-30 08:15:04 | INFO     | src.pipeline.orchestrator:collect_data:46 — Collecting data for 300476
+2026-04-30 08:15:07 | INFO     | src.data.akshare_fetcher:fetch_daily_data:94 — Fetched 1 daily bars for 300476
+2026-04-30 08:15:07 | INFO     | src.pipeline.orchestrator:collect_data:60 — 300476: saved 1 daily bars
+2026-04-30 08:15:07 | INFO     | src.pipeline.orchestrator:compute_indicators:77 — 300476: computed & saved 1531 indicator rows
+2026-04-30 08:15:07 | INFO     | src.ai.features:build_features:46 — Built features: 1526 samples, 54 features
+2026-04-30 08:15:08 | INFO     | src.ai.sklearn_predictor:train:53 — Model trained: 1220 samples, 54 features, classes=[0.0, 1.0, 2.0]
+2026-04-30 08:15:08 | INFO     | src.ai.evaluation:evaluate_model:42 — Model accuracy: 0.3922
+2026-04-30 08:15:08 | INFO     | src.ai.sklearn_predictor:save:100 — Model saved to data\models\300476_2026-04-30.joblib
+2026-04-30 08:15:08 | INFO     | src.pipeline.orchestrator:train_model:100 — Model for 300476 — accuracy=0.3922, saved to data\models\300476_2026-04-30.joblib
+2026-04-30 08:15:08 | INFO     | src.ai.features:build_features:46 — Built features: 1526 samples, 54 features
+2026-04-30 09:13:01 | INFO     | web:_load_stock_list:167 — Loaded 5201 stocks for search cache
+2026-04-30 09:15:29 | INFO     | web:_load_stock_list:167 — Loaded 5201 stocks for search cache
+2026-04-30 09:19:01 | INFO     | web:_load_stock_list:167 — Loaded 5201 stocks for search cache
+2026-04-30 09:25:04 | INFO     | web:_load_stock_list:167 — Loaded 5201 stocks for search cache
+2026-04-30 09:28:15 | INFO     | web:_load_stock_list:167 — Loaded 5201 stocks for search cache
+2026-04-30 09:30:26 | INFO     | web:_load_stock_list:167 — Loaded 5201 stocks for search cache
+2026-04-30 09:36:16 | INFO     | web:_load_stock_list:167 — Loaded 5201 stocks for search cache
+2026-04-30 09:37:31 | INFO     | web:_load_stock_list:167 — Loaded 5201 stocks for search cache
+2026-04-30 09:39:23 | INFO     | web:_load_stock_list:167 — Loaded 5201 stocks for search cache
+2026-04-30 09:44:05 | INFO     | web:_load_stock_list:167 — Loaded 5201 stocks for search cache
+2026-04-30 10:10:06 | INFO     | web:_load_stock_list:167 — Loaded 5201 stocks for search cache
+2026-04-30 10:34:56 | INFO     | web:_load_stock_list:167 — Loaded 5201 stocks for search cache
+2026-04-30 10:39:01 | INFO     | web:_load_stock_list:167 — Loaded 5201 stocks for search cache
+2026-04-30 10:40:21 | INFO     | web:_load_stock_list:167 — Loaded 5201 stocks for search cache
+2026-04-30 10:40:50 | INFO     | src.analysis.analyzer:_build_registry:41 — TechnicalAnalyzer initialized with: ['ma', 'rsi', 'macd', 'bollinger']
+2026-04-30 10:40:50 | INFO     | src.pipeline.orchestrator:collect_data:46 — Collecting data for 000001
+2026-04-30 10:40:52 | INFO     | src.data.akshare_fetcher:fetch_daily_data:94 — Fetched 2 daily bars for 000001
+2026-04-30 10:40:53 | INFO     | src.pipeline.orchestrator:collect_data:60 — 000001: saved 2 daily bars
+2026-04-30 10:40:53 | INFO     | src.pipeline.orchestrator:compute_indicators:77 — 000001: computed & saved 1532 indicator rows
+2026-04-30 10:40:53 | INFO     | src.ai.features:build_features:46 — Built features: 1527 samples, 54 features
+2026-04-30 10:40:53 | INFO     | src.ai.sklearn_predictor:train:53 — Model trained: 1221 samples, 54 features, classes=[0.0, 1.0, 2.0]
+2026-04-30 10:40:53 | INFO     | src.ai.evaluation:evaluate_model:42 — Model accuracy: 0.3725
+2026-04-30 10:40:53 | INFO     | src.ai.sklearn_predictor:save:100 — Model saved to data\models\000001_2026-04-30.joblib
+2026-04-30 10:40:53 | INFO     | src.pipeline.orchestrator:train_model:100 — Model for 000001 — accuracy=0.3725, saved to data\models\000001_2026-04-30.joblib
+2026-04-30 10:40:53 | INFO     | src.ai.features:build_features:46 — Built features: 1527 samples, 54 features
+2026-04-30 21:39:07 | INFO     | web:_load_stock_list:167 — Loaded 5201 stocks for search cache
+2026-04-30 21:42:27 | INFO     | web:_load_stock_list:167 — Loaded 5201 stocks for search cache
+2026-04-30 21:42:32 | INFO     | web:_load_stock_list:167 — Loaded 5201 stocks for search cache
+2026-04-30 21:46:45 | INFO     | web:_load_stock_list:167 — Loaded 5201 stocks for search cache
+2026-04-30 21:46:46 | INFO     | web:_load_stock_list:167 — Loaded 5201 stocks for search cache
+2026-04-30 21:46:46 | INFO     | src.analysis.analyzer:_build_registry:41 — TechnicalAnalyzer initialized with: ['ma', 'rsi', 'macd', 'bollinger']
+2026-04-30 22:01:55 | INFO     | src.pipeline.orchestrator:collect_data:46 — Collecting data for 601166
+2026-04-30 22:01:55 | INFO     | src.pipeline.orchestrator:collect_data:55 — No existing data for 601166, fetching from 2020-01-01
+2026-04-30 22:02:00 | INFO     | src.data.akshare_fetcher:fetch_daily_data:94 — Fetched 1532 daily bars for 601166
+2026-04-30 22:02:00 | INFO     | src.pipeline.orchestrator:collect_data:60 — 601166: saved 1532 daily bars
+2026-04-30 22:02:00 | INFO     | src.pipeline.orchestrator:compute_indicators:77 — 601166: computed & saved 1532 indicator rows
+2026-04-30 22:02:00 | INFO     | src.ai.features:build_features:46 — Built features: 1527 samples, 54 features
+2026-04-30 22:02:00 | INFO     | src.ai.sklearn_predictor:train:53 — Model trained: 1221 samples, 54 features, classes=[0.0, 1.0, 2.0]
+2026-04-30 22:02:00 | INFO     | src.ai.evaluation:evaluate_model:42 — Model accuracy: 0.4935
+2026-04-30 22:02:00 | INFO     | src.ai.sklearn_predictor:save:100 — Model saved to data\models\601166_2026-04-30.joblib
+2026-04-30 22:02:00 | INFO     | src.pipeline.orchestrator:train_model:100 — Model for 601166 — accuracy=0.4935, saved to data\models\601166_2026-04-30.joblib
+2026-04-30 22:02:00 | INFO     | src.ai.features:build_features:46 — Built features: 1527 samples, 54 features
+2026-04-30 22:02:23 | INFO     | web:_load_stock_list:167 — Loaded 5201 stocks for search cache
+2026-04-30 22:05:39 | INFO     | src.analysis.analyzer:_build_registry:41 — TechnicalAnalyzer initialized with: ['ma', 'rsi', 'macd', 'bollinger']
+2026-04-30 23:04:30 | INFO     | web:_load_stock_list:167 — Loaded 5201 stocks for search cache
+2026-04-30 23:21:38 | WARNING  | web:_load_stock_list:169 — Stock list load failed: HTTPSConnectionPool(host='data.eastmoney.com', port=443): Read timed out.
+2026-04-30 23:33:10 | INFO     | src.analysis.analyzer:_build_registry:41 — TechnicalAnalyzer initialized with: ['ma', 'rsi', 'macd', 'bollinger']
+2026-05-01 09:58:01 | INFO     | src.pipeline.orchestrator:collect_data:46 — Collecting data for 601166
+2026-05-01 09:58:04 | INFO     | src.data.akshare_fetcher:fetch_daily_data:94 — Fetched 1 daily bars for 601166
+2026-05-01 09:58:05 | INFO     | src.pipeline.orchestrator:collect_data:60 — 601166: saved 1 daily bars
+2026-05-01 09:58:05 | INFO     | src.pipeline.orchestrator:compute_indicators:77 — 601166: computed & saved 1532 indicator rows
+2026-05-01 09:58:05 | INFO     | src.ai.features:build_features:46 — Built features: 1527 samples, 54 features
+2026-05-01 09:58:05 | INFO     | src.ai.sklearn_predictor:train:53 — Model trained: 1221 samples, 54 features, classes=[0.0, 1.0, 2.0]
+2026-05-01 09:58:05 | INFO     | src.ai.evaluation:evaluate_model:42 — Model accuracy: 0.4935
+2026-05-01 09:58:05 | INFO     | src.ai.sklearn_predictor:save:100 — Model saved to data\models\601166_2026-05-01.joblib
+2026-05-01 09:58:05 | INFO     | src.pipeline.orchestrator:train_model:100 — Model for 601166 — accuracy=0.4935, saved to data\models\601166_2026-05-01.joblib
+2026-05-01 09:58:05 | INFO     | src.ai.features:build_features:46 — Built features: 1527 samples, 54 features
+2026-05-01 20:15:25 | INFO     | web:_load_stock_list:167 — Loaded 5201 stocks for search cache
+2026-05-01 20:15:29 | INFO     | web:_load_stock_list:167 — Loaded 5201 stocks for search cache

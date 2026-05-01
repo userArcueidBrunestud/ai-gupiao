@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>A股智能分析</title>
+  <link rel="stylesheet" href="/static/style.css">
+  <style>
+    .hidden { display: none !important; }
+    .flex { display: flex; }
+    .flex-col { flex-direction: column; }
+    .items-center { align-items: center; }
+    .gap-2 { gap: 8px; }
+    .gap-4 { gap: 16px; }
+    .mb-4 { margin-bottom: 16px; }
+    .text-center { text-align: center; }
+    .w-full { width: 100%; }
+  </style>
+</head>
+<body>
+  <div class="app-layout">
+    <aside class="sidebar">
+      <div class="sidebar-logo">
+        <span class="dot"></span>A股智能分析
+      </div>
+
+      <div class="sidebar-section-title">搜索股票</div>
+      <div style="position:relative;">
+        <input type="text" id="sidebarSearch" class="search-input"
+               placeholder="代码 / 名称..." autocomplete="off"
+               style="font-size:0.85rem; padding:10px 12px;">
+        <div class="search-dropdown" id="sidebarDropdown"></div>
+      </div>
+
+      <div class="sidebar-section-title" style="display:flex; justify-content:space-between; align-items:center;">
+        历史记录
+        <button onclick="clearHistory()" style="background:none; border:none; color:var(--text-muted); cursor:pointer; font-size:0.7rem;">清空</button>
+      </div>
+      <ul class="history-list" id="historyList">
+        <li style="color:var(--text-muted); font-size:0.8rem; padding:8px 12px;">
+          暂无记录
+        </li>
+      </ul>
+    </aside>
+
+    <main class="main-content">
+      <div style="display:flex; gap:4px; margin-bottom:16px; background:var(--bg-card); border-radius:10px; padding:4px; width:fit-content;">
+        <button class="mode-tab active" data-mode="single" style="padding:8px 20px; border:none; border-radius:8px; background:rgba(59,130,246,0.15); color:var(--accent-blue); font-size:0.9rem; font-weight:600; cursor:pointer;">单股分析</button>
+        <button class="mode-tab" data-mode="screen" style="padding:8px 20px; border:none; border-radius:8px; background:transparent; color:var(--text-secondary); font-size:0.9rem; font-weight:500; cursor:pointer;">全市场选股</button>
+        <button class="mode-tab" data-mode="macro" style="padding:8px 20px; border:none; border-radius:8px; background:transparent; color:var(--text-secondary); font-size:0.9rem; font-weight:500; cursor:pointer;">宏观</button>
+      </div>
+
+      <div class="hidden" id="macroPanel">
+        <div class="glass-card" style="margin-bottom:20px;">
+          <div style="display:grid; grid-template-columns:repeat(6,1fr); gap:16px; margin-bottom:16px;" id="macroIndicators"></div>
+          <div style="font-size:0.75rem; color:var(--text-muted); text-align:center;">数据延迟约 1-2 个交易日，仅供参考</div>
+        </div>
+        <div class="glass-card" style="margin-bottom:20px;">
+          <div style="display:flex; align-items:center; gap:8px; margin-bottom:12px;">
+            <span style="font-size:0.85rem; color:var(--text-muted);">市场热点</span>
+            <input type="text" id="newsKeyword" placeholder="搜索关键词..." style="padding:4px 10px; background:rgba(255,255,255,0.04); border:1px solid var(--border-card); border-radius:6px; color:var(--text-primary); font-size:0.75rem; width:160px;">
+            <button class="btn" style="padding:4px 12px; background:var(--accent-blue); color:#fff; border:none; border-radius:6px; font-size:0.75rem;" onclick="loadHeadlines()">刷新</button>
+          </div>
+          <div id="headlinesList" style="max-height:360px; overflow-y:auto;"></div>
+        </div>
+      </div>
+
+      <div class="search-section" id="singleSearchSection">
+        <div class="search-input-wrapper">
+          <input type="text" id="mainSearch" class="search-input"
+                 placeholder="输入6位股票代码，如 000001，回车直接分析..." autocomplete="off">
+          <div class="search-dropdown" id="mainDropdown"></div>
+        </div>
+        <button class="btn btn-primary" id="analyzeBtn" disabled>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/><path d="M9 12l2 2 4-4"/></svg>
+          分析
+        </button>
+      </div>
+
+      <div class="hidden" id="screenPanel">
+        <div style="display:flex; gap:12px; margin-bottom:20px;">
+          <select id="strategySelect" style="flex:1; padding:12px 16px; background:rgba(255,255,255,0.04); border:1px solid var(--border-card); border-radius:var(--radius-md); color:var(--text-primary); font-size:0.95rem; outline:none;">
+            <option value="">加载策略中...</option>
+          </select>
+          <button class="btn btn-primary" id="screenBtn">开始选股</button>
+        </div>
+        <div id="screenProgress" class="hidden">
+          <div class="glass-card" style="margin-bottom:20px; display:flex; align-items:center; gap:12px;">
+            <div class="spinner" style="width:20px;height:20px;"></div>
+            <span style="color:var(--text-secondary);">正在扫描全市场...</span>
+          </div>
+        </div>
+        <div id="screenResults" class="hidden">
+          <div class="glass-card" style="margin-bottom:16px; display:flex; gap:20px; font-size:0.85rem; color:var(--text-secondary);">
+            <span id="screenMeta"></span>
+          </div>
+          <div class="glass-card" style="overflow-x:auto;">
+            <table style="width:100%; border-collapse:collapse; font-size:0.85rem;">
+              <thead>
+                <tr style="border-bottom:1px solid var(--border-subtle); color:var(--text-muted);">
+                  <th style="padding:10px 12px; text-align:left;">代码</th>
+                  <th style="padding:10px 12px; text-align:left;">名称</th>
+                  <th style="padding:10px 12px; text-align:right;">价格</th>
+                  <th style="padding:10px 12px; text-align:right;">涨跌幅</th>
+                  <th style="padding:10px 12px; text-align:right;">PE</th>
+                  <th style="padding:10px 12px; text-align:right;">PB</th>
+                  <th style="padding:10px 12px; text-align:right;">综合得分</th>
+                  <th style="padding:10px 12px; text-align:left;">行业</th>
+                </tr>
+              </thead>
+              <tbody id="screenTableBody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <div id="progressArea" class="hidden">
+        <div class="glass-card" style="margin-bottom:24px;">
+          <div style="display:flex; align-items:center; gap:12px;">
+            <div class="spinner" style="width:24px;height:24px;"></div>
+            <span id="progressText">正在准备...</span>
+          </div>
+          <div class="progress-steps" id="progressSteps">
+            <span class="progress-step" data-step="collecting">采集数据</span>
+            <span class="progress-step" data-step="analyzing">计算指标</span>
+            <span class="progress-step" data-step="training">训练模型</span>
+            <span class="progress-step" data-step="predicting">生成预测</span>
+          </div>
+        </div>
+      </div>
+
+      <div id="resultsArea" class="hidden">
+        <div class="stats-row" id="statsRow"></div>
+        <div style="display:grid; grid-template-columns:1fr 1fr 260px; gap:16px; margin-bottom:20px;">
+          <div class="glass-card gradient-border" id="suggestionCard"></div>
+          <div class="glass-card gradient-border" id="trendCard"></div>
+          <div class="glass-card" id="gaugeCard"></div>
+        </div>
+        <div class="strategy-grid" id="strategyGrid">
+          <div class="strategy-card buy"><div class="s-label">理想买入价</div><div class="s-value" id="stratIdeal">--</div></div>
+          <div class="strategy-card buy2"><div class="s-label">次级买入价</div><div class="s-value" id="stratSecond">--</div></div>
+          <div class="strategy-card stop"><div class="s-label">止损价</div><div class="s-value" id="stratStop">--</div></div>
+          <div class="strategy-card target"><div class="s-label">止盈价</div><div class="s-value" id="stratTarget">--</div></div>
+        </div>
+        <div class="glass-card" style="margin-bottom:20px;">
+          <div style="font-size:0.85rem; color:var(--text-muted); margin-bottom:12px;">技术指标</div>
+          <div class="indicators-row" id="indicatorsRow"></div>
+        </div>
+        <div class="glass-card">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+            <span style="font-size:0.85rem; color:var(--text-muted);">K线图</span>
+            <div style="display:flex; gap:6px;">
+              <button class="chart-range-btn" data-days="30" style="padding:4px 10px; border:1px solid var(--border-card); border-radius:6px; background:transparent; color:var(--text-secondary); cursor:pointer; font-size:0.75rem;">30天</button>
+              <button class="chart-range-btn active" data-days="90" style="padding:4px 10px; border:1px solid var(--accent-blue); border-radius:6px; background:rgba(59,130,246,0.12); color:var(--accent-blue); cursor:pointer; font-size:0.75rem;">90天</button>
+              <button class="chart-range-btn" data-days="180" style="padding:4px 10px; border:1px solid var(--border-card); border-radius:6px; background:transparent; color:var(--text-secondary); cursor:pointer; font-size:0.75rem;">180天</button>
+            </div>
+          </div>
+          <div class="chart-container" id="chartContainer">
+            <div class="loading-overlay"><div class="spinner"></div><span>加载图表...</span></div>
+          </div>
+        </div>
+
+        <div style="display:grid; grid-template-columns:1fr 2fr; gap:16px; margin-bottom:20px;">
+          <div class="glass-card">
+            <div style="font-size:0.85rem; color:var(--text-muted); margin-bottom:12px;">个股档案</div>
+            <div id="profileContent">
+              <div style="padding:6px 0; border-bottom:1px solid var(--border-subtle); display:flex; justify-content:space-between;"><span style="color:var(--text-muted);">行业</span><span id="profIndustry">--</span></div>
+              <div style="padding:6px 0; border-bottom:1px solid var(--border-subtle); display:flex; justify-content:space-between;"><span style="color:var(--text-muted);">总市值</span><span id="profTotalMv">--</span></div>
+              <div style="padding:6px 0; border-bottom:1px solid var(--border-subtle); display:flex; justify-content:space-between;"><span style="color:var(--text-muted);">市盈率</span><span id="profPE">--</span></div>
+              <div style="padding:6px 0; border-bottom:1px solid var(--border-subtle); display:flex; justify-content:space-between;"><span style="color:var(--text-muted);">市净率</span><span id="profPB">--</span></div>
+              <div style="padding:6px 0; display:flex; justify-content:space-between;"><span style="color:var(--text-muted);">上市时间</span><span id="profListed">--</span></div>
+            </div>
+          </div>
+          <div class="glass-card">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+              <span style="font-size:0.85rem; color:var(--text-muted);">行业基本面</span>
+              <span style="font-size:0.7rem; color:var(--text-muted);">东方财富 | 雪球</span>
+            </div>
+            <div id="industryContent">
+              <div style="padding:6px 0; border-bottom:1px solid var(--border-subtle); display:flex; justify-content:space-between;"><span style="color:var(--text-muted);">所属行业</span><span id="indName">--</span></div>
+              <div style="padding:6px 0; border-bottom:1px solid var(--border-subtle); display:flex; justify-content:space-between;"><span style="color:var(--text-muted);">行业涨跌幅</span><span id="indChange">--</span></div>
+              <div style="padding:6px 0; border-bottom:1px solid var(--border-subtle); display:flex; justify-content:space-between;"><span style="color:var(--text-muted);">东方财富热度</span><span id="platHot">--</span></div>
+              <div style="padding:6px 0; border-bottom:1px solid var(--border-subtle); display:flex; justify-content:space-between;"><span style="color:var(--text-muted);">5日主力净流入</span><span id="platFlow">--</span></div>
+              <div style="padding:6px 0; display:flex; justify-content:space-between;"><span style="color:var(--text-muted);">雪球关注</span><span id="platXq">--</span></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="glass-card" style="margin-bottom:20px;">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+            <span style="font-size:0.85rem; color:var(--text-muted);">资金态度</span>
+            <span style="font-size:0.7rem; color:var(--text-muted);">北向 + 机构</span>
+          </div>
+          <div style="display:grid; grid-template-columns:repeat(4,1fr); gap:16px;" id="sentimentGrid">
+            <div style="text-align:center;"><div style="font-size:0.7rem; color:var(--text-muted);">北向持仓市值</div><div style="font-size:1.1rem; font-weight:700;" id="northValue">--</div></div>
+            <div style="text-align:center;"><div style="font-size:0.7rem; color:var(--text-muted);">北向10日变动</div><div style="font-size:1.1rem; font-weight:700;" id="northTrend">--</div></div>
+            <div style="text-align:center;"><div style="font-size:0.7rem; color:var(--text-muted);">持基家数</div><div style="font-size:1.1rem; font-weight:700;" id="fundCount">--</div></div>
+            <div style="text-align:center;"><div style="font-size:0.7rem; color:var(--text-muted);">大盘北向5日</div><div style="font-size:1.1rem; font-weight:700;" id="marketNorth">--</div></div>
+          </div>
+        </div>
+
+        <div class="glass-card" style="margin-bottom:20px;">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+            <span style="font-size:0.85rem; color:var(--text-muted);">资金耐心 + 互动热度 <span id="irmBadge" style="font-size:0.65rem; margin-left:4px;"></span></span>
+          </div>
+          <div id="patienceChart" style="min-height:280px;">
+            <div class="loading-overlay"><div class="spinner"></div><span>加载中...</span></div>
+          </div>
+        </div>
+
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:20px;">
+          <div class="glass-card">
+            <div style="font-size:0.85rem; color:var(--text-muted); margin-bottom:12px;">营收与利润(亿)</div>
+            <div id="finChart" style="min-height:250px;">
+              <div class="loading-overlay"><div class="spinner"></div></div>
+            </div>
+          </div>
+          <div class="glass-card">
+            <div style="font-size:0.85rem; color:var(--text-muted); margin-bottom:12px;">ROE & 估值水位</div>
+            <div id="roeChart" style="min-height:250px;">
+              <div class="loading-overlay"><div class="spinner"></div></div>
+            </div>
+          </div>
+        </div>
+
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-top:0px;">
+          <div class="glass-card">
+            <div style="font-size:0.85rem; color:var(--text-muted); margin-bottom:12px;">券商研报</div>
+            <div id="researchList" style="max-height:400px; overflow-y:auto;"></div>
+          </div>
+          <div class="glass-card">
+            <div style="font-size:0.85rem; color:var(--text-muted); margin-bottom:12px;">最新资讯</div>
+            <div id="newsList" style="max-height:400px; overflow-y:auto;"></div>
+          </div>
+        </div>
+      </div>
+
+      <div id="emptyState" style="display:flex; flex-direction:column; align-items:center; justify-content:center; min-height:400px; color:var(--text-muted);">
+        <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" opacity="0.3" style="margin-bottom:20px;">
+          <rect x="3" y="3" width="18" height="18" rx="3"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="9" y1="21" x2="9" y2="9"/>
+        </svg>
+        <div style="font-size:1.1rem; margin-bottom:6px;">开始分析</div>
+        <div style="font-size:0.85rem;">输入6位股票代码，查看技术指标和 AI 预测</div>
+      </div>
+
+    </main>
+  </div>
+
+  <script src="/static/app.js"></script>
+</body>
+</html>

@@ -1,0 +1,48 @@
+# 短线选股策略：量价突破 + 资金热度
+name: short_term
+display_name: 短线突破
+description: 资金活跃、量价配合、短线趋势强劲的进攻型策略
+version: "1.0"
+category: momentum
+tags: [momentum, breakout, short_term, swing]
+
+screening:
+  enabled: true
+  market_scope: [cn]
+  hard_filters:
+    exclude_st: true
+    amount_min: 80000000
+    price_min: 5
+    price_max: 100
+    market_cap_min: 2000000000
+    market_cap_max: 100000000000
+  tech_weight: 0.35
+  factor_weights:
+    momentum: 0.50
+    activity: 0.30
+    liquidity: 0.15
+    stability: 0.05
+  scoring_profile:
+    momentum_short_window: 5
+    momentum_ideal_change_pct: 5.0
+    activity_ideal_volume_ratio: 2.0
+    activity_ideal_turnover_rate: 4.0
+    momentum_chase_start_pct: 3.0
+  risk_profile:
+    chase_change_pct: 8.0
+    abnormal_volume_ratio: 5.0
+    high_turnover_rate: 10.0
+    low_llm_confidence: 0.40
+  portfolio_profile:
+    max_same_bucket: 3
+    concentration_penalty: 2.0
+    buckets:
+      科技: [半导体, 电子, 软件, AI, 通信]
+      制造: [机械, 汽车, 新能源, 化工]
+      消费: [酒, 食品, 家电, 医药]
+  ranking_hints: |
+    优先考虑：
+    1. 放量突破近期高点，成交量持续放大
+    2. 短线资金积极，换手率适中不过高
+    3. 板块联动效应明显，有热点催化
+  max_output: 10

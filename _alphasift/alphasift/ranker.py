@@ -1,0 +1,563 @@
+# -*- coding: utf-8 -*-
+"""L2 LLM ranker — relative ranking of shortlisted candidates."""
+
+import json
+import logging
+import os
+import re
+from dataclasses import dataclass
+
+from alphasift.models import Pick
+
+logger = logging.getLogger(__name__)
+
+
+@dataclass
+class RankingParseResult:
+    picks: list[Pick]
+    coverage: float
+    errors: list[str]
+    market_view: str = ""
+    selection_logic: str = ""
+    portfolio_risk: str = ""
+
+
+@dataclass
+class LLMRankingResult:
+    picks: list[Pick]
+    ranked: bool = False
+    market_view: str = ""
+    selection_logic: str = ""
+    portfolio_risk: str = ""
+    coverage: float = 0.0
+    errors: list[str] | None = None
+
+    def __post_init__(self) -> None:
+        if self.errors is None:
+            self.errors = []
+
+
+def rank_candidates(
+    candidates: list[Pick],
+    ranking_hints: str,
+    llm_api_key: str,
+    llm_model: str,
+    llm_base_url: str = "",
+    *,
+    context: str = "",
+    rank_weight: float = 0.40,
+    max_retries: int = 1,
+    min_coverage: float = 0.60,
+    fallback_models: list[str] | None = None,
+    temperature: float = 0.2,
+    json_mode: bool = True,
+    silent: bool = True,
+    channels: list[dict[str, object]] | None = None,
+    config_path: str = "",
+) -> list[Pick]:
+    """Use LLM to re-rank candidates and add ranking_reason / risk_summary.
+
+    Falls back to screen_score order if LLM call fails.
+    """
+    return rank_candidates_with_metadata(
+        candidates,
+        ranking_hints,
+        llm_api_key,
+        llm_model,
+        llm_base_url,
+        context=context,
+        rank_weight=rank_weight,
+        max_retries=max_retries,
+        min_coverage=min_coverage,
+        fallback_models=fallback_models,
+        temperature=temperature,
+        json_mode=json_mode,
+        silent=silent,
+        channels=channels,
+        config_path=config_path,
+    ).picks
+
+
+def rank_candidates_with_metadata(
+    candidates: list[Pick],
+    ranking_hints: str,
+    llm_api_key: str,
+    llm_model: str,
+    llm_base_url: str = "",
+    *,
+    context: str = "",
+    rank_weight: float = 0.40,
+    max_retries: int = 1,
+    min_coverage: float = 0.60,
+    fallback_models: list[str] | None = None,
+    temperature: float = 0.2,
+    json_mode: bool = True,
+    silent: bool = True,
+    channels: list[dict[str, object]] | None = None,
+    config_path: str = "",
+) -> LLMRankingResult:
+    """Use LLM to re-rank candidates and return global research metadata."""
+    if not candidates:
+        return LLMRankingResult(picks=candidates)
+
+    prompt = _build_ranking_prompt(candidates, ranking_hints, context)
+
+    try:
+        last_errors: list[str] = []
+        parsed: RankingParseResult | None = None
+        for attempt in range(max_retries + 1):
+            attempt_prompt = prompt
+            if attempt:
+                attempt_prompt += (
+                    "\n\n上一次输出没有满足结构化覆盖率要求。"
+                    "请重新返回严格 JSON，并覆盖尽可能多的候选代码。"
+                )
+            response = _call_llm(
+                attempt_prompt,
+                llm_api_key,
+                llm_model,
+                llm_base_url,
+                fallback_models=fallback_models or [],
+                temperature=temperature,
+                json_mode=json_mode,
+                silent=silent,
+                channels=channels or [],
+                config_path=config_path,
+            )
+            parsed = _parse_ranking_response_detail(response, candidates)
+            last_errors = parsed.errors
+            if parsed.coverage >= min_coverage:
+                break
+        if parsed is None or parsed.coverage < min_coverage:
+            raise ValueError(
+                "LLM ranking response coverage below threshold: "
+                f"{0 if parsed is None else parsed.coverage:.2f}; "
+                f"errors={last_errors}"
+            )
+        ranked = parsed.picks
+        for i, pick in enumerate(ranked):
+            pick.rank = i + 1
+            if pick.llm_score is None:
+                pick.llm_score = 100.0 - i * (100.0 / max(len(ranked), 1))
+            weight = min(max(rank_weight, 0.0), 1.0)
+            pick.final_score = pick.screen_score * (1 - weight) + (pick.llm_score or 0) * weight
+        ranked.sort(key=lambda item: item.final_score, reverse=True)
+        for i, pick in enumerate(ranked, start=1):
+            pick.rank = i
+        return LLMRankingResult(
+            picks=ranked,
+            ranked=True,
+            market_view=parsed.market_view,
+            selection_logic=parsed.selection_logic,
+            portfolio_risk=parsed.portfolio_risk,
+            coverage=parsed.coverage,
+            errors=parsed.errors,
+        )
+    except Exception as e:
+        logger.warning("LLM ranking failed, falling back to screen_score: %s", e)
+        return LLMRankingResult(picks=candidates, errors=[str(e)])
+
+
+def _build_ranking_prompt(candidates: list[Pick], hints: str, context: str = "") -> str:
+    candidates_text = "\n".join(
+        f"- {p.code} {p.name}: price={p.price}, change_pct={p.change_pct}%, "
+        f"amount={p.amount:.0f}, turnover={p.turnover_rate}, volume_ratio={p.volume_ratio}, "
+        f"total_mv={p.total_mv}, PE={p.pe_ratio}, PB={p.pb_ratio}, "
+        f"industry={p.industry or 'unknown'}, concepts={p.concepts or 'unknown'}, "
+        f"industry_rank={p.industry_rank}, industry_change_pct={p.industry_change_pct}, "
+        f"board_heat_score={p.board_heat_score}, board_heat_summary={p.board_heat_summary or 'unknown'}, "
+        f"board_heat_latest_score={p.board_heat_latest_score}, "
+        f"board_heat_trend_score={p.board_heat_trend_score}, "
+        f"board_heat_persistence_score={p.board_heat_persistence_score}, "
+        f"board_heat_cooling_score={p.board_heat_cooling_score}, "
+        f"board_heat_observations={p.board_heat_observations}, "
+        f"board_heat_state={p.board_heat_state or 'unknown'}, "
+        f"change_60d={p.change_60d}, signal_score={p.signal_score}, "
+        f"macd={p.macd_status}, rsi={p.rsi_status}, "
+        f"breakout_20d_pct={p.breakout_20d_pct}, range_20d_pct={p.range_20d_pct}, "
+        f"volume_ratio_20d={p.volume_ratio_20d}, body_pct={p.body_pct}, "
+        f"pullback_to_ma20_pct={p.pullback_to_ma20_pct}, "
+        f"consolidation_days_20d={p.consolidation_days_20d}, "
+        f"screen_score={p.screen_score:.1f}, factor_scores={p.factor_scores}"
+        for p in candidates
+    )
+    return f"""你是一个专业的股票研究员，任务是在“已经由代码硬筛过”的候选池内做相对排序。
+你不能推荐候选池外股票，不能修改硬筛条件，不能给目标价或承诺收益。你的价值在于：
+1. 结合策略偏好，对候选之间做跨股票比较；
+2. 识别结构化数据暴露不出的潜在催化、风格匹配和风险点；
+3. 对行业/概念热度做语义归因，但不能把单日热度当作唯一买入理由；
+4. 给出简短、可审计、可复核的排序理由。
+
+## 排序依据
+{hints}
+
+## 市场/情报上下文
+{context or "无额外上下文。只能基于候选池结构化数据和策略偏好判断。"}
+
+## 候选列表
+{candidates_text}
+
+## 输出要求
+只返回 JSON，不要 Markdown，不要解释 JSON 以外的文本。
+格式：
+{{
+  "market_view": "一句话概括当前候选池和市场背景是否适合该策略",
+  "selection_logic": "说明本次排序最主要的2-3个判断维度",
+  "portfolio_risk": "说明最终名单可能存在的集中风险或共同风险",
+  "ranked": [
+    {{
+      "code": "股票代码",
+      "llm_score": 0-100,
+      "confidence": 0-1,
+      "sector": "行业/主题短标签，优先参考候选的 industry/concepts，并尽量统一，如 券商、银行、医药、AI算力",
+      "theme": "主要交易逻辑或主题",
+      "thesis": "该候选入选的核心投资假设",
+      "reason": "一句话排序理由",
+      "risk": "一句话主要风险",
+      "catalysts": ["潜在催化1", "潜在催化2"],
+      "risk_flags": ["风险标签1"],
+      "tags": ["价值", "趋势", "防守", "事件", "流动性"],
+      "style_fit": "与策略风格的匹配度说明",
+      "watch_items": ["后续应跟踪的数据或事件"],
+      "invalidators": ["会推翻该候选逻辑的观察点"]
+    }}
+  ]
+}}
+"""
+
+
+def _call_llm(
+    prompt: str,
+    api_key: str,
+    model: str,
+    base_url: str,
+    *,
+    fallback_models: list[str] | None = None,
+    temperature: float = 0.2,
+    json_mode: bool = True,
+    silent: bool = True,
+    channels: list[dict[str, object]] | None = None,
+    config_path: str = "",
+) -> str:
+    """Call LLM via litellm with fallback models and channel configs."""
+    import litellm
+
+    if silent:
+        _silence_litellm_logs(litellm)
+
+    messages = [{"role": "user", "content": prompt}]
+    model_chain = _dedupe([model, *(fallback_models or [])])
+    last_error: Exception | None = None
+
+    if config_path:
+        router_result = _call_litellm_router(
+            litellm,
+            config_path=config_path,
+            model_chain=model_chain,
+            messages=messages,
+            temperature=temperature,
+            json_mode=json_mode,
+        )
+        if router_result is not None:
+            return router_result
+
+    for candidate_model in model_chain:
+        for kwargs in _build_litellm_attempts(
+            candidate_model,
+            api_key=api_key,
+            base_url=base_url,
+            channels=channels or [],
+        ):
+            kwargs["messages"] = messages
+            kwargs["temperature"] = temperature
+            if json_mode:
+                kwargs["response_format"] = {"type": "json_object"}
+            try:
+                response = litellm.completion(**kwargs)
+                return response.choices[0].message.content or ""
+            except Exception as exc:
+                last_error = exc
+                if json_mode and "response_format" in kwargs:
+                    # Some providers do not support JSON mode. Retry the same
+                    # request without it before moving to fallback models.
+                    retry_kwargs = dict(kwargs)
+                    retry_kwargs.pop("response_format", None)
+                    try:
+                        response = litellm.completion(**retry_kwargs)
+                        return response.choices[0].message.content or ""
+                    except Exception as retry_exc:
+                        last_error = retry_exc
+                        continue
+                continue
+
+    if last_error is not None:
+        raise last_error
+    raise RuntimeError("No LLM model configured")
+
+
+def _parse_ranking_response(response: str, candidates: list[Pick]) -> list[Pick]:
+    """Parse LLM response and reorder candidates."""
+    return _parse_ranking_response_detail(response, candidates).picks
+
+
+def _parse_ranking_response_detail(response: str, candidates: list[Pick]) -> RankingParseResult:
+    """Parse LLM response and return diagnostics."""
+    import re
+
+    errors: list[str] = []
+    # Extract JSON array from response (may be wrapped in markdown code block)
+    cleaned = re.sub(r"```(?:json)?\s*", "", response)
+    stripped = cleaned.strip()
+    if stripped.startswith("["):
+        start = cleaned.find("[")
+        end = cleaned.rfind("]") + 1
+    else:
+        start = cleaned.find("{")
+        end = cleaned.rfind("}") + 1
+    if start < 0 or end <= start:
+        errors.append("no_json_found")
+        logger.warning("No JSON object or array found in LLM response")
+        return RankingParseResult(candidates, 0.0, errors)
+
+    try:
+        parsed = json.loads(cleaned[start:end])
+    except json.JSONDecodeError as e:
+        errors.append(f"json_decode_error:{e}")
+        logger.warning("Failed to parse LLM ranking JSON: %s", e)
+        return RankingParseResult(candidates, 0.0, errors)
+    if isinstance(parsed, dict):
+        items = parsed.get("ranked", [])
+        market_view = _safe_str(parsed.get("market_view"), max_len=260)
+        selection_logic = _safe_str(parsed.get("selection_logic"), max_len=360)
+        portfolio_risk = _safe_str(parsed.get("portfolio_risk"), max_len=360)
+    else:
+        items = parsed
+        market_view = ""
+        selection_logic = ""
+        portfolio_risk = ""
+    if not isinstance(items, list):
+        errors.append("ranked_not_list")
+        logger.warning("LLM ranking JSON has no ranked list")
+        return RankingParseResult(candidates, 0.0, errors)
+
+    code_to_pick = {_normalize_code(p.code): p for p in candidates if _normalize_code(p.code)}
+
+    ranked = []
+    matched = 0
+    seen_codes = set()
+    for item in items:
+        if not isinstance(item, dict):
+            errors.append("non_object_item")
+            continue
+        code = _normalize_code(item.get("code", ""))
+        if code in seen_codes:
+            errors.append(f"duplicate_code:{code}")
+            continue
+        seen_codes.add(code)
+        if code in code_to_pick:
+            pick = code_to_pick.pop(code)
+            pick.ranking_reason = _safe_str(item.get("reason"), max_len=180)
+            pick.risk_summary = _safe_str(item.get("risk"), max_len=180)
+            pick.llm_score = _bounded_float(item.get("llm_score"), low=0, high=100)
+            pick.llm_confidence = _bounded_float(item.get("confidence"), low=0, high=1)
+            pick.llm_sector = _safe_str(
+                item.get("sector") or item.get("industry") or item.get("sector_label"),
+                max_len=40,
+            )
+            pick.llm_theme = _safe_str(item.get("theme"), max_len=100)
+            pick.llm_thesis = _safe_str(item.get("thesis"), max_len=220)
+            pick.llm_catalysts = _safe_string_list(item.get("catalysts"))
+            pick.llm_invalidators = _safe_string_list(item.get("invalidators"))
+            pick.llm_style_fit = _safe_str(item.get("style_fit"), max_len=120)
+            pick.llm_watch_items = _safe_string_list(item.get("watch_items"))
+            pick.llm_risks = _safe_string_list(item.get("risk_flags"))
+            pick.llm_tags = _safe_string_list(item.get("tags"))
+            if pick.llm_sector:
+                pick.llm_tags = _dedupe([*pick.llm_tags, f"sector:{pick.llm_sector}"])
+            if pick.llm_theme:
+                pick.llm_tags = _dedupe([*pick.llm_tags, f"theme:{pick.llm_theme}"])
+            if pick.llm_style_fit:
+                pick.llm_tags = _dedupe([*pick.llm_tags, f"style_fit:{pick.llm_style_fit}"])
+            ranked.append(pick)
+            matched += 1
+        elif code:
+            errors.append(f"unknown_code:{code}")
+
+    # Append any candidates not mentioned by LLM
+    ranked.extend(code_to_pick.values())
+    coverage = matched / max(len(candidates), 1)
+    return RankingParseResult(
+        ranked,
+        coverage,
+        errors,
+        market_view=market_view,
+        selection_logic=selection_logic,
+        portfolio_risk=portfolio_risk,
+    )
+
+
+def _safe_float(value) -> float | None:
+    try:
+        if value is None or value == "":
+            return None
+        return float(value)
+    except (TypeError, ValueError):
+        return None
+
+
+def _normalize_code(value: object) -> str:
+    text = "" if value is None else str(value).strip()
+    if not text or text.lower() in {"nan", "none", "<na>"}:
+        return ""
+    if text.endswith(".0") and text[:-2].isdigit():
+        text = text[:-2]
+    if text.isdigit():
+        return text.zfill(6)[-6:]
+    match = re.search(r"(?<!\d)(\d{6})(?!\d)", text)
+    if match:
+        return match.group(1)
+    digits = "".join(ch for ch in text if ch.isdigit())
+    return digits.zfill(6)[-6:] if digits else ""
+
+
+def _bounded_float(value, *, low: float, high: float) -> float | None:
+    parsed = _safe_float(value)
+    if parsed is None:
+        return None
+    return max(low, min(parsed, high))
+
+
+def _safe_str(value, *, max_len: int) -> str:
+    if value is None:
+        return ""
+    return str(value).strip()[:max_len]
+
+
+def _safe_string_list(value) -> list[str]:
+    if not isinstance(value, list):
+        return []
+    return [str(item).strip()[:80] for item in value if str(item).strip()]
+
+
+def _call_litellm_router(
+    litellm,
+    *,
+    config_path: str,
+    model_chain: list[str],
+    messages: list[dict[str, str]],
+    temperature: float,
+    json_mode: bool,
+) -> str | None:
+    try:
+        import yaml
+
+        with open(config_path, "r", encoding="utf-8") as handle:
+            data = yaml.safe_load(handle) or {}
+        model_list = data.get("model_list")
+        if not isinstance(model_list, list) or not model_list:
+            return None
+        router = litellm.Router(model_list=model_list)
+        for model in model_chain:
+            kwargs = {"model": model, "messages": messages, "temperature": temperature}
+            if json_mode:
+                kwargs["response_format"] = {"type": "json_object"}
+            try:
+                response = router.completion(**kwargs)
+                return response.choices[0].message.content or ""
+            except Exception:
+                if "response_format" in kwargs:
+                    kwargs.pop("response_format", None)
+                    response = router.completion(**kwargs)
+                    return response.choices[0].message.content or ""
+                raise
+    except Exception as exc:
+        logger.warning("LiteLLM router config failed, falling back to direct calls: %s", exc)
+    return None
+
+
+def _silence_litellm_logs(litellm) -> None:
+    os.environ.setdefault("LITELLM_LOG", "ERROR")
+    try:
+        litellm.set_verbose = False
+        litellm.suppress_debug_info = True
+    except Exception:
+        pass
+    for logger_name in ("LiteLLM", "litellm"):
+        logging.getLogger(logger_name).setLevel(logging.WARNING)
+
+
+def _build_litellm_attempts(
+    model: str,
+    *,
+    api_key: str,
+    base_url: str,
+    channels: list[dict[str, object]],
+) -> list[dict[str, object]]:
+    attempts = []
+    for channel in channels:
+        if not _channel_matches_model(channel, model):
+            continue
+        api_keys = channel.get("api_keys", [])
+        if not isinstance(api_keys, list) or not api_keys:
+            api_keys = [api_key] if api_key else [""]
+        for channel_key in api_keys:
+            attempts.append(_completion_kwargs(
+                model,
+                api_key=str(channel_key or ""),
+                base_url=str(channel.get("base_url", "") or base_url or ""),
+            ))
+
+    attempts.append(_completion_kwargs(model, api_key=api_key, base_url=base_url))
+    return _unique_attempts(attempts)
+
+
+def _completion_kwargs(model: str, *, api_key: str, base_url: str) -> dict[str, object]:
+    kwargs: dict[str, object] = {"model": model}
+    if api_key:
+        kwargs["api_key"] = api_key
+    if base_url:
+        kwargs["api_base"] = base_url
+    return kwargs
+
+
+def _channel_matches_model(channel: dict[str, object], model: str) -> bool:
+    models = channel.get("models", [])
+    if not isinstance(models, list) or not models:
+        return False
+    normalized = {_normalize_model_name(str(item), str(channel.get("protocol", "openai"))) for item in models}
+    return model in normalized or model.split("/", 1)[-1] in {item.split("/", 1)[-1] for item in normalized}
+
+
+def _normalize_model_name(model: str, protocol: str) -> str:
+    model = model.strip()
+    if "/" in model:
+        return model
+    if protocol == "ollama":
+        return f"ollama/{model}"
+    if protocol == "gemini":
+        return f"gemini/{model}"
+    if protocol == "deepseek":
+        return f"deepseek/{model}"
+    return f"openai/{model}"
+
+
+def _unique_attempts(items: list[dict[str, object]]) -> list[dict[str, object]]:
+    seen = set()
+    result = []
+    for item in items:
+        key = (item.get("model"), item.get("api_key"), item.get("api_base"))
+        if key not in seen:
+            seen.add(key)
+            result.append(item)
+    return result
+
+
+def _dedupe(items: list[str]) -> list[str]:
+    seen = set()
+    result = []
+    for item in items:
+        key = str(item).strip()
+        if key and key not in seen:
+            seen.add(key)
+            result.append(key)
+    return result

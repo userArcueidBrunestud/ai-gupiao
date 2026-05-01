@@ -1,0 +1,56 @@
+# 长线选股策略：深度价值 + 质量因子
+name: long_term
+display_name: 长线价值
+description: 低估值、高质量、分红稳定的长期持有策略
+version: "1.0"
+category: value
+tags: [value, quality, long_term, defensive]
+
+screening:
+  enabled: true
+  market_scope: [cn]
+  hard_filters:
+    exclude_st: true
+    amount_min: 50000000
+    pe_ttm_max: 20
+    pb_max: 3.0
+    market_cap_min: 10000000000
+    market_cap_max: 500000000000
+    price_min: 3
+    price_max: 200
+  tech_weight: 0.15
+  factor_weights:
+    value: 0.50
+    quality: 0.25
+    stability: 0.15
+    size: 0.10
+  scoring_profile:
+    momentum_short_window: 20
+    momentum_ideal_change_pct: 3.0
+    activity_ideal_volume_ratio: 1.0
+    activity_ideal_turnover_rate: 1.5
+    momentum_chase_start_pct: 1.0
+    stability_hot_change_pct: 3.0
+  risk_profile:
+    chase_change_pct: 4.0
+    abnormal_volume_ratio: 3.0
+    high_turnover_rate: 5.0
+    low_llm_confidence: 0.50
+  portfolio_profile:
+    max_same_bucket: 1
+    concentration_penalty: 5.0
+    buckets:
+      金融: [券商, 银行, 保险]
+      消费: [酒, 食品, 家电, 汽车, 医药]
+      能源: [电力, 煤炭, 石油, 新能源]
+  scorecard_profile:
+    value_quality_value_min: 75.0
+    value_quality_stability_min: 70.0
+    value_quality_bonus: 5.0
+  ranking_hints: |
+    优先考虑：
+    1. ROE>15%且连续三年稳定
+    2. 分红率>2%, 现金流健康
+    3. 行业龙头, 护城河深厚
+    4. 估值处于15%分位数以下
+  max_output: 5

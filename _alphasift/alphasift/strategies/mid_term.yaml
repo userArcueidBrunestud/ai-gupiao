@@ -1,0 +1,50 @@
+# 中线选股策略：趋势延续 + 回调确认
+name: mid_term
+display_name: 中线趋势
+description: 趋势确立后回调到位、基本面支撑的波段策略
+version: "1.0"
+category: trend
+tags: [trend, pullback, mid_term, swing]
+
+screening:
+  enabled: true
+  market_scope: [cn]
+  hard_filters:
+    exclude_st: true
+    amount_min: 60000000
+    price_min: 3
+    price_max: 150
+    market_cap_min: 5000000000
+    market_cap_max: 200000000000
+  tech_weight: 0.30
+  factor_weights:
+    trend: 0.35
+    value: 0.25
+    stability: 0.20
+    liquidity: 0.20
+  scoring_profile:
+    momentum_short_window: 10
+    momentum_ideal_change_pct: 8.0
+    activity_ideal_volume_ratio: 1.5
+    activity_ideal_turnover_rate: 2.5
+    momentum_chase_start_pct: 2.0
+    stability_hot_change_pct: 5.0
+  risk_profile:
+    chase_change_pct: 6.0
+    abnormal_volume_ratio: 4.0
+    high_turnover_rate: 7.0
+    low_llm_confidence: 0.45
+  portfolio_profile:
+    max_same_bucket: 2
+    concentration_penalty: 3.0
+    buckets:
+      科技: [半导体, 电子, 软件, AI, 通信, 互联网]
+      制造: [机械, 汽车, 新能源, 电力设备]
+      消费: [酒, 食品, 家电, 医药, 汽车]
+      周期: [钢铁, 煤炭, 有色, 化工, 建材]
+  ranking_hints: |
+    优先考虑：
+    1. 处于MA20上方，回调至MA10附近企稳
+    2. 盈利增速稳定，ROE>10%
+    3. 机构持仓稳定，无大幅减持
+  max_output: 8
