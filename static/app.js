@@ -134,7 +134,7 @@ async function onComplete(code, name, result) {
 
 function renderCoreResult(code, name, result) {
   for (let i = history.length - 1; i >= 0; i--) {
-    if (history[i].code === code && history[i].date === result.date) { history.splice(i, 1); break; }
+    if (history[i].code === code) { history.splice(i, 1); }
   }
   history.unshift({ code, name, trend: result.trend, confidence: result.confidence, date: result.date });
   if (history.length > 50) history.pop();
